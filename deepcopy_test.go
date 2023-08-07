@@ -1108,3 +1108,39 @@ func TestInterface(t *testing.T) {
 		t.Errorf("expected value %v, but it's %v", "custom copy", copiedNest.I.A)
 	}
 }
+
+type Chan struct {
+	Ch chan int
+}
+
+func TestChannel(t *testing.T) {
+	var c = Chan{
+		Ch: make(chan int, 10),
+	}
+
+	copied := Copy[Chan](c)
+	if cap(copied.Ch) != 10 {
+		t.Errorf("expected value %v, but it's %v", 10, cap(copied.Ch))
+	}
+	if len(copied.Ch) != 0 {
+		t.Errorf("expected empty chan, but it's %v", len(copied.Ch))
+	}
+
+	for i := 0; i < 10; i++ {
+		select {
+		case c.Ch <- i:
+		default:
+		}
+	}
+	close(c.Ch)
+
+	var total int
+	for i := range c.Ch {
+		total += i
+	}
+
+	if total != 45 {
+		t.Errorf("expected value %v, but it's %v", 45, total)
+	}
+
+}

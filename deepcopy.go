@@ -112,6 +112,12 @@ func copyRecursive(original, cpy reflect.Value) {
 			cpy.SetMapIndex(reflect.ValueOf(copyKey), copyValue)
 		}
 
+	case reflect.Chan:
+		if original.IsNil() {
+			return
+		}
+		cpy.Set(reflect.MakeChan(original.Type(), original.Cap()))
+
 	default:
 		cpy.Set(original)
 	}

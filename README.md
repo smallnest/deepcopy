@@ -11,6 +11,7 @@ DeepCopy makes deep copies of things: unexported field values are not copied.
 - Support Map
 - Support Slice
 - Support Interface
+- Support Channel;
 
 Forked from [mohae/deepcopy](https://github.com/mohae/deepcopy) and add generic support.
 
