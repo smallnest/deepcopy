@@ -1144,3 +1144,13 @@ func TestChannel(t *testing.T) {
 	}
 
 }
+
+func TestArray(t *testing.T) {
+	var a = [6]int{0, 1, 2, 3, 4, 5}
+	copied := Copy[[6]int](a)
+	a[0] = 10
+
+	if copied[0] != 0 {
+		t.Errorf("expected value %v, but it's %v", 0, copied[0])
+	}
+}
