@@ -3,6 +3,8 @@
 // values are not copied.
 //
 // Copyright (c)2014-2016, Joel Scoble (github.com/mohae), all rights reserved.
+// Copyright (c)2023-, smallnest (github.com/smallnest), all rights reserved.
+
 // License: MIT, for more details check the included LICENSE file.
 package deepcopy
 
@@ -16,30 +18,21 @@ type Interface interface {
 	DeepCopy() interface{}
 }
 
-// Iface is an alias to Copy; this exists for backwards compatibility reasons.
-func Iface(iface interface{}) interface{} {
-	return Copy(iface)
-}
-
 // Copy creates a deep copy of whatever is passed to it and returns the copy
 // in an interface{}.  The returned value will need to be asserted to the
 // correct type.
-func Copy(src interface{}) interface{} {
-	if src == nil {
-		return nil
-	}
-
-	// Make the interface a reflect.Value
+func Copy[T any](src T) T {
+	// Make src to a reflect.Value
 	original := reflect.ValueOf(src)
 
 	// Make a copy of the same type as the original.
 	cpy := reflect.New(original.Type()).Elem()
 
-	// Recursively copy the original.
 	copyRecursive(original, cpy)
 
-	// Return the copy as an interface.
-	return cpy.Interface()
+	t, _ := cpy.Interface().(T)
+
+	return t
 }
 
 // copyRecursive does the actual copying of the interface. It currently has

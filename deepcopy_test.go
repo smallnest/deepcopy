@@ -11,7 +11,7 @@ import (
 // just basic is this working stuff
 func TestSimple(t *testing.T) {
 	Strings := []string{"a", "b", "c"}
-	cpyS := Copy(Strings).([]string)
+	cpyS := Copy[[]string](Strings)
 	if (*reflect.SliceHeader)(unsafe.Pointer(&Strings)).Data == (*reflect.SliceHeader)(unsafe.Pointer(&cpyS)).Data {
 		t.Error("[]string: expected SliceHeader data pointers to point to different locations, they didn't")
 		goto CopyBools
@@ -28,7 +28,7 @@ func TestSimple(t *testing.T) {
 
 CopyBools:
 	Bools := []bool{true, true, false, false}
-	cpyB := Copy(Bools).([]bool)
+	cpyB := Copy[[]bool](Bools)
 	if (*reflect.SliceHeader)(unsafe.Pointer(&Strings)).Data == (*reflect.SliceHeader)(unsafe.Pointer(&cpyB)).Data {
 		t.Error("[]bool: expected SliceHeader data pointers to point to different locations, they didn't")
 		goto CopyBytes
@@ -45,7 +45,7 @@ CopyBools:
 
 CopyBytes:
 	Bytes := []byte("hello")
-	cpyBt := Copy(Bytes).([]byte)
+	cpyBt := Copy[[]byte](Bytes)
 	if (*reflect.SliceHeader)(unsafe.Pointer(&Strings)).Data == (*reflect.SliceHeader)(unsafe.Pointer(&cpyBt)).Data {
 		t.Error("[]byte: expected SliceHeader data pointers to point to different locations, they didn't")
 		goto CopyInts
@@ -62,7 +62,7 @@ CopyBytes:
 
 CopyInts:
 	Ints := []int{42}
-	cpyI := Copy(Ints).([]int)
+	cpyI := Copy[[]int](Ints)
 	if (*reflect.SliceHeader)(unsafe.Pointer(&Strings)).Data == (*reflect.SliceHeader)(unsafe.Pointer(&cpyI)).Data {
 		t.Error("[]int: expected SliceHeader data pointers to point to different locations, they didn't")
 		goto CopyUints
@@ -79,7 +79,7 @@ CopyInts:
 
 CopyUints:
 	Uints := []uint{1, 2, 3, 4, 5}
-	cpyU := Copy(Uints).([]uint)
+	cpyU := Copy[[]uint](Uints)
 	if (*reflect.SliceHeader)(unsafe.Pointer(&Strings)).Data == (*reflect.SliceHeader)(unsafe.Pointer(&cpyU)).Data {
 		t.Error("[]: expected SliceHeader data pointers to point to different locations, they didn't")
 		goto CopyFloat32s
@@ -96,7 +96,7 @@ CopyUints:
 
 CopyFloat32s:
 	Float32s := []float32{3.14}
-	cpyF := Copy(Float32s).([]float32)
+	cpyF := Copy[[]float32](Float32s)
 	if (*reflect.SliceHeader)(unsafe.Pointer(&Strings)).Data == (*reflect.SliceHeader)(unsafe.Pointer(&cpyF)).Data {
 		t.Error("[]float32: expected SliceHeader data pointers to point to different locations, they didn't")
 		goto CopyInterfaces
@@ -113,7 +113,7 @@ CopyFloat32s:
 
 CopyInterfaces:
 	Interfaces := []interface{}{"a", 42, true, 4.32}
-	cpyIf := Copy(Interfaces).([]interface{})
+	cpyIf := Copy[[]interface{}](Interfaces)
 	if (*reflect.SliceHeader)(unsafe.Pointer(&Strings)).Data == (*reflect.SliceHeader)(unsafe.Pointer(&cpyIf)).Data {
 		t.Error("[]interfaces: expected SliceHeader data pointers to point to different locations, they didn't")
 		return
@@ -211,7 +211,7 @@ func TestMostTypes(t *testing.T) {
 		Interfaces:  []interface{}{42, true, "pan-galactic"},
 	}
 
-	cpy := Copy(test).(Basics)
+	cpy := Copy[Basics](test)
 
 	// see if they point to the same location
 	if fmt.Sprintf("%p", &cpy) == fmt.Sprintf("%p", &test) {
@@ -577,7 +577,7 @@ Interfaces:
 // not meant to be exhaustive
 func TestComplexSlices(t *testing.T) {
 	orig3Int := [][][]int{[][]int{[]int{1, 2, 3}, []int{11, 22, 33}}, [][]int{[]int{7, 8, 9}, []int{66, 77, 88, 99}}}
-	cpyI := Copy(orig3Int).([][][]int)
+	cpyI := Copy[[][][]int](orig3Int)
 	if (*reflect.SliceHeader)(unsafe.Pointer(&orig3Int)).Data == (*reflect.SliceHeader)(unsafe.Pointer(&cpyI)).Data {
 		t.Error("[][][]int: address of copy was the same as original; they should be different")
 		return
@@ -607,7 +607,7 @@ func TestComplexSlices(t *testing.T) {
 
 sliceMap:
 	slMap := []map[int]string{map[int]string{0: "a", 1: "b"}, map[int]string{10: "k", 11: "l", 12: "m"}}
-	cpyM := Copy(slMap).([]map[int]string)
+	cpyM := Copy[[]map[int]string](slMap)
 	if (*reflect.SliceHeader)(unsafe.Pointer(&slMap)).Data == (*reflect.SliceHeader)(unsafe.Pointer(&cpyM)).Data {
 		t.Error("[]map[int]string: address of copy was the same as original; they should be different")
 	}
@@ -667,7 +667,7 @@ var AStruct = A{
 }
 
 func TestStructA(t *testing.T) {
-	cpy := Copy(AStruct).(A)
+	cpy := Copy[A](AStruct)
 	if &cpy == &AStruct {
 		t.Error("expected copy to have a different address than the original; it was the same")
 		return
@@ -823,7 +823,7 @@ func TestUnexportedFields(t *testing.T) {
 		cc: []int{1, 2, 3},
 		dd: map[string]string{"hello": "bonjour"},
 	}
-	cpy := Copy(u).(*Unexported)
+	cpy := Copy[*Unexported](u)
 	if cpy == u {
 		t.Error("expected addresses to be different, they weren't")
 		return
@@ -878,7 +878,7 @@ func TestTimeCopy(t *testing.T) {
 		}
 		var x T
 		x.Time = time.Date(test.Y, test.M, test.D, test.h, test.m, test.s, test.nsec, l)
-		c := Copy(x).(T)
+		c := Copy[T](x)
 		if fmt.Sprintf("%p", &c) == fmt.Sprintf("%p", &x) {
 			t.Errorf("%d: expected the copy to have a different address than the original value; they were the same: %p %p", i, &c, &x)
 			continue
@@ -915,7 +915,7 @@ func TestIssue9(t *testing.T) {
 		"a": nil,
 		"b": &x,
 	}
-	copyA := Copy(testA).(map[string]*int)
+	copyA := Copy[map[string]*int](testA)
 	if unsafe.Pointer(&testA) == unsafe.Pointer(&copyA) {
 		t.Fatalf("expected the map pointers to be different: testA: %v\tcopyA: %v", unsafe.Pointer(&testA), unsafe.Pointer(&copyA))
 	}
@@ -959,7 +959,7 @@ func TestIssue9(t *testing.T) {
 		},
 	}
 
-	copyB := Copy(testB).(Biz)
+	copyB := Copy[Biz](testB)
 	if !reflect.DeepEqual(testB, copyB) {
 		t.Errorf("got %#v; want %#v", copyB, testB)
 		return
@@ -1015,7 +1015,7 @@ func TestIssue9(t *testing.T) {
 		},
 	}
 
-	copyC := Copy(testC).(map[*Foo][]string)
+	copyC := Copy[map[*Foo][]string](testC)
 	if unsafe.Pointer(&testC) == unsafe.Pointer(&copyC) {
 		t.Fatalf("expected the map pointers to be different; they weren't: testB: %v\tcopyB: %v", unsafe.Pointer(&testB.Epsilon), unsafe.Pointer(&copyB.Epsilon))
 	}
@@ -1054,7 +1054,7 @@ func TestIssue9(t *testing.T) {
 		Bizz{&Foo{"Neuromancer"}}: "Rio",
 		Bizz{&Foo{"Wintermute"}}:  "Berne",
 	}
-	copyD := Copy(testD).(map[Bizz]string)
+	copyD := Copy[map[Bizz]string](testD)
 	if len(copyD) != len(testD) {
 		t.Fatalf("copy had %d elements; expected %d", len(copyD), len(testD))
 	}
@@ -1097,13 +1097,13 @@ type NestI struct {
 
 func TestInterface(t *testing.T) {
 	i := &I{A: "A"}
-	copied := Copy(i).(*I)
+	copied := Copy[*I](i)
 	if copied.A != "custom copy" {
 		t.Errorf("expected value %v, but it's %v", "custom copy", copied.A)
 	}
 	// check for nesting values
 	ni := &NestI{I: &I{A: "A"}}
-	copiedNest := Copy(ni).(*NestI)
+	copiedNest := Copy[*NestI](ni)
 	if copiedNest.I.A != "custom copy" {
 		t.Errorf("expected value %v, but it's %v", "custom copy", copiedNest.I.A)
 	}
