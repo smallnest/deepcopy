@@ -1154,3 +1154,45 @@ func TestArray(t *testing.T) {
 		t.Errorf("expected value %v, but it's %v", 0, copied[0])
 	}
 }
+
+type S struct {
+	A string
+}
+
+type PI struct {
+	P any
+	I *any
+}
+
+func TestPointerInterface(t *testing.T) {
+	s := &S{A: "A"}
+	var si any = &S{A: "AA"}
+	pi := &PI{P: s, I: &si}
+	copied := Copy[*PI](pi)
+	s.A = "B"
+	si.(*S).A = "BB"
+
+	if copied.P == nil {
+		t.Errorf("expected an value, but it's nil")
+	}
+
+	s, ok := copied.P.(*S)
+	if !ok {
+		t.Errorf("expected *I, but it's %T", copied.P)
+	}
+
+	if s.A != "A" {
+		t.Errorf("expected value %v, but it's %v", "A", s.A)
+	}
+
+	sany := *copied.I
+	s, ok = sany.(*S)
+	if !ok {
+		t.Errorf("expected *any, but it's %T", copied.I)
+	}
+
+	if s.A != "AA" {
+		t.Errorf("expected value %v, but it's %v", "A", s.A)
+	}
+
+}
